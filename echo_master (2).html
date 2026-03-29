@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ECHO">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>E Ɔ H O</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #000; width: 100vw; height: 100vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /* Safe area para notch e home indicator */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ── PHONE SHELL — só no desktop ── */
+@media (min-width: 500px) {
+  body { display: flex; align-items: center; justify-content: center; background: #0a0a0a; }
+  .phone {
+    width: 320px; height: 693px;
+    border: 10px solid #1c1c1c; border-radius: 50px;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.95), 0 0 0 1px #222;
+  }
+  .di { display: block !important; }
+}
+@media (max-width: 499px) {
+  .phone { width: 100vw; height: 100vh; border-radius: 0; border: none; box-shadow: none; }
+  .di { display: none; }
+}
+
+.phone {
+  background: #000;
+  position: relative; overflow: hidden;
+}
+.di {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  width: 106px; height: 30px; background: #000;
+  border-radius: 16px; z-index: 200;
+}
+.logo-bar {
+  position: absolute; top: 0; width: 100%; height: 84px;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 10px; z-index: 100; pointer-events: none;
+}
+.logo {
+  font-weight: 300; letter-spacing: 6px; font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* ── SCREENS ── */
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.screen.active { opacity: 1; pointer-events: all; }
+
+/* ════════════════════════════════
+   TELA 1 — ORACLE
+════════════════════════════════ */
+#s1 { background: #000; justify-content: flex-start; }
+#s1 .logo { color: #fff; opacity: 0.65; }
+
+#vortex-wrap {
+  margin-top: 90px;
+  width: 200px; height: 200px;
+  position: relative; display: flex;
+  align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+#vortex-wrap canvas { position: absolute; top: 0; left: 0; }
+#vortex-wrap svg { position: absolute; z-index: 2; pointer-events: none; }
+
+/* Mic + label — ABAIXO do círculo, fora do vortex-wrap */
+#mic-group {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 12px;
+  margin-top: 18px; flex-shrink: 0;
+}
+#mic-btn {
+  width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.25);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; background: transparent;
+  position: relative; transition: 0.4s;
+}
+#mic-btn.on { border-color: rgba(255,255,255,0.8); box-shadow: 0 0 0 10px rgba(255,255,255,0.05); }
+#mic-btn svg { width: 17px; height: 17px; opacity: 0.55; transition: 0.4s; }
+#mic-btn.on svg { opacity: 1; }
+.mic-pulse {
+  position: absolute; width: 48px; height: 48px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  animation: micPulse 2s ease infinite; pointer-events: none;
+}
+#speak-lbl {
+  color: #fff; font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; font-weight: 300;
+  opacity: 0.45; text-align: center; line-height: 2;
+  transition: opacity 0.4s;
+}
+#speak-lbl.on { opacity: 0.9; }
+
+/* Teclado fixo suspenso */
+#s1-bottom {
+  display: flex; flex-direction: column; align-items: center;
+  margin-top: 14px; width: 100%; flex-shrink: 0;
+}
+#s1-input {
+  width: 240px; background: transparent; border: none;
+  color: #fff; opacity: 0.55; text-align: center;
+  font-size: 14px; outline: none; font-weight: 300;
+  letter-spacing: 1px; caret-color: rgba(255,255,255,0.7);
+}
+#s1-input::placeholder { color: rgba(255,255,255,0.25); font-style: italic; font-size: 12px; }
+#s1-input:focus { opacity: 0.9; }
+#s1-sep { width: 232px; height: 1px; background: rgba(255,255,255,0.12); margin-top: 10px; }
+
+
+#s1-handle {
+  position: absolute; bottom: 14px;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; z-index: 10;
+  width: 60px; /* largura fixa para centralizar bar e label juntos */
+}
+#s1-handle-bar {
+  width: 34px; height: 2.5px;
+  background: rgba(255,255,255,0.1); border-radius: 2px; transition: 0.4s;
+}
+#s1-handle:hover #s1-handle-bar { background: rgba(255,255,255,0.4); }
+#s1-handle-lbl {
+  font-size: 9px; letter-spacing: 3px;
+  color: rgba(255,255,255,0.18); text-transform: uppercase; transition: 0.4s;
+  text-align: center; width: 100%;
+}
+
+/* Ambos pulsam juntos */
+#s1-handle.has-echo #s1-handle-bar {
+  background: rgba(255,255,255,0.85);
+  animation: barPulse 1.8s ease infinite;
+}
+#s1-handle.has-echo #s1-handle-lbl {
+  color: rgba(255,255,255,0.85);
+  animation: barPulse 1.8s ease infinite;
+}
+@keyframes barPulse {
+  0%,100% { opacity: 0.85; }
+  50%      { opacity: 0.2; }
+}
+#feed-badge { display: none; }
+
+/* ════════════════════════════════
+   TELA 2 — VEREDITO
+════════════════════════════════ */
+#s2 { background: #fff; justify-content: center; }
+#s2 .logo { color: #000; opacity: 0.45; }
+
+#verdict-block {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 0 28px; gap: 0; width: 100%;
+}
+#verdict-text {
+  font-size: 30px; font-weight: 200; letter-spacing: 6px;
+  color: #000; text-transform: uppercase; text-align: center;
+  line-height: 1.15; opacity: 0;
+  animation: slideUp 0.8s ease forwards 0.1s;
+}
+#verdict-line {
+  width: 1px; height: 32px; background: rgba(0,0,0,0.12);
+  margin: 20px 0; opacity: 0;
+  animation: fadeIn 0.6s ease forwards 0.3s;
+}
+#verdict-sub {
+  font-size: 11px; color: #aaa; font-style: italic;
+  text-align: center; line-height: 1.7; max-width: 220px;
+  opacity: 0; animation: slideUp 0.8s ease forwards 0.4s;
+}
+
+/* Timer */
+#timer-wrap {
+  position: absolute; bottom: 78px; width: calc(100% - 48px);
+  display: flex; flex-direction: column; gap: 6px;
+}
+#timer-lbl { font-size: 7px; letter-spacing: 3px; color: #ccc; text-transform: uppercase; }
+#timer-track { width: 100%; height: 1px; background: #eee; }
+#timer-fill { height: 1px; background: #000; transform-origin: left; width: 100%; }
+
+/* Botões Tela 2 */
+#s2-btns {
+  position: absolute; bottom: 16px; width: 100%;
+  display: flex; justify-content: center; gap: 50px;
+}
+.s2-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  cursor: pointer; opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+}
+.s2-btn.discard { animation-delay: 0.6s; }
+.s2-btn.confirm { animation-delay: 0.8s; }
+.s2-ring {
+  width: 46px; height: 46px; border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  display: flex; align-items: center; justify-content: center;
+  transition: 0.4s;
+  animation: pulseRing 2.5s ease infinite;
+}
+.s2-btn.confirm .s2-ring { border-color: rgba(0,0,0,0.22); }
+.s2-icon { font-size: 17px; color: #000; opacity: 0.22; transition: 0.4s; font-weight: 100; }
+.s2-btn.confirm .s2-icon { opacity: 0.35; }
+.s2-lbl { font-size: 7px; letter-spacing: 2px; color: #ccc; text-transform: uppercase; }
+.s2-btn:hover .s2-ring { border-color: rgba(0,0,0,0.5); }
+.s2-btn:hover .s2-icon { opacity: 0.85; }
+
+/* ════════════════════════════════
+   TELA 3 — ECHO CHAMBER (FEED)
+════════════════════════════════ */
+#s3 { background: #fff; justify-content: flex-start; }
+#s3 .logo { color: #000; opacity: 0.45; }
+
+#feed-handle {
+  position: absolute; bottom: 14px; width: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 5px; z-index: 10; cursor: pointer;
+  /* Área de proteção — impede que o feed invada */
+  background: linear-gradient(to top, #fff 60%, transparent);
+  padding-top: 20px;
+}
+#feed-handle-bar {
+  width: 34px; height: 2.5px;
+  background: rgba(0,0,0,0.12); border-radius: 2px;
+  transition: 0.3s;
+}
+#feed-handle:hover #feed-handle-bar { background: rgba(0,0,0,0.35); }
+#feed-handle-lbl {
+  font-size: 7px; letter-spacing: 3px;
+  color: rgba(0,0,0,0.25); text-transform: uppercase;
+}
+
+#feed-list {
+  position: absolute; top: 84px;
+  /* Deixa espaço generoso para o handle oracle não ser invadido */
+  bottom: 70px;
+  width: 100%; overflow-y: auto;
+}
+#feed-list::-webkit-scrollbar { display: none; }
+
+/* Cards do feed */
+.fcard {
+  padding: 16px 22px; border-bottom: 1px solid #f4f4f4;
+  position: relative; overflow: hidden;
+  transition: transform 0.25s ease;
+  user-select: none;
+}
+.fcard.swiping { transition: none; }
+
+/* Overlay de voto que aparece durante o swipe */
+.swipe-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; opacity: 0; pointer-events: none;
+  transition: opacity 0.1s;
+}
+.swipe-overlay.like  { background: rgba(255,255,255,0.92); color: #111; }
+.swipe-overlay.dislike { background: rgba(255,255,255,0.92); color: #bbb; }
+
+.fcard-top {
+  display: flex; justify-content: space-between;
+  align-items: center; margin-bottom: 9px;
+}
+.fcard-user { font-size: 8px; letter-spacing: 1px; color: #bbb; }
+.fcard-metrics { display: flex; align-items: center; gap: 14px; }
+.fm { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.fm-icon { font-size: 12px; opacity: 0.2; transition: 0.3s; line-height: 1; }
+.fm-icon:hover, .fm-icon.voted { opacity: 0.85; }
+.fm-val { font-size: 8px; color: #ccc; }
+.fcard-verdict {
+  font-size: 10px; letter-spacing: 3px; font-weight: 300;
+  color: #111; text-transform: uppercase; line-height: 1.4;
+}
+.fcard-sub { font-size: 9px; color: #bbb; margin-top: 4px; font-style: italic; }
+
+/* Ícone de comentário bloqueado vs desbloqueado */
+.fm-icon.locked { opacity: 0.1 !important; }
+.fm-icon.unlocked { opacity: 0.55; }
+
+.comments-box {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+.comments-box.open { max-height: 320px; opacity: 1; }
+
+/* Aviso de voto necessário */
+.c-need-vote {
+  padding: 10px 0 6px; border-top: 1px solid #f6f6f6;
+  font-size: 8px; letter-spacing: 2px; color: #ddd;
+  text-transform: uppercase; text-align: center;
+}
+
+.c-input-row {
+  display: none; padding: 8px 0 4px;
+  border-top: 1px solid #f6f6f6;
+  gap: 8px; align-items: center;
+}
+.c-input-row.show { display: flex; }
+.c-inp {
+  flex: 1; border: none; border-bottom: 1px solid #eee;
+  font-size: 11px; color: #333; outline: none;
+  padding: 4px 0; background: transparent;
+  font-family: inherit; transition: 0.3s;
+}
+.c-inp:focus { border-color: #bbb; }
+.c-inp::placeholder { color: #ddd; font-style: italic; font-size: 10px; }
+.c-send {
+  font-size: 8px; letter-spacing: 1px; color: #bbb;
+  text-transform: uppercase; cursor: pointer;
+  border: none; background: transparent;
+  font-family: inherit; transition: 0.3s;
+}
+.c-send:hover { color: #333; }
+
+.c-item { padding: 7px 0; border-top: 1px solid #f6f6f6; }
+.c-who { font-size: 7px; letter-spacing: 1px; color: #ddd; text-transform: uppercase; margin-bottom: 2px; }
+.c-txt { font-size: 10px; color: #666; line-height: 1.5; }
+
+/* ── SETUP SCREEN ── */
+#s0 { background: #000; justify-content: center; }
+#s0 .logo { color: #fff; opacity: 0.6; }
+#setup-box {
+  width: 260px; display: flex; flex-direction: column;
+  align-items: center; gap: 24px;
+}
+#setup-title {
+  color: #fff; font-size: 10px; letter-spacing: 3px;
+  text-transform: uppercase; opacity: 0.5; text-align: center;
+  line-height: 1.9;
+}
+#setup-input {
+  width: 100%; background: transparent;
+  border: none; border-bottom: 1px solid rgba(255,255,255,0.15);
+  color: #fff; font-size: 11px; outline: none;
+  padding: 8px 0; text-align: center; letter-spacing: 1px;
+  font-family: inherit;
+}
+#setup-input::placeholder { color: rgba(255,255,255,0.2); font-style: italic; }
+#setup-btn {
+  background: transparent; border: 1px solid rgba(255,255,255,0.2);
+  color: rgba(255,255,255,0.6); font-size: 9px; letter-spacing: 3px;
+  text-transform: uppercase; padding: 10px 28px; cursor: pointer;
+  border-radius: 2px; font-family: inherit; transition: 0.3s;
+}
+#setup-btn:hover { border-color: rgba(255,255,255,0.6); color: #fff; }
+#setup-err {
+  font-size: 9px; color: rgba(255,100,100,0.7);
+  letter-spacing: 1px; display: none; text-align: center;
+}
+
+/* Tag # — tela 2 e feed */
+#verdict-tag {
+  font-size: 9px; letter-spacing: 2px; color: #000;
+  opacity: 0; margin-top: 14px;
+  animation: slideUp 0.8s ease forwards 0.65s;
+  font-weight: 300;
+}
+.fcard-tag {
+  font-size: 8px; letter-spacing: 1.5px;
+  color: #bbb; font-weight: 300;
+  text-align: right; white-space: nowrap;
+}
+/* Row que alinha a tag à direita com o ↗ */
+.fcard-bottom {
+  display: flex; justify-content: space-between;
+  align-items: flex-end; margin-top: 8px;
+}
+.fcard-bottom-left { flex: 1; }
+#verdict-loading {
+  display: none; flex-direction: column; align-items: center; gap: 16px;
+}
+#loading-dots { display: flex; gap: 6px; }
+.ldot {
+  width: 4px; height: 4px; border-radius: 50%; background: #ccc;
+  animation: ldotPulse 1.2s ease infinite;
+}
+.ldot:nth-child(2){ animation-delay: 0.2s; }
+.ldot:nth-child(3){ animation-delay: 0.4s; }
+#loading-lbl {
+  font-size: 8px; letter-spacing: 3px; color: #ccc;
+  text-transform: uppercase;
+}
+@keyframes ldotPulse { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+/* ── ANIMATIONS ── */
+@keyframes slideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes pulseRing { 0%,100%{box-shadow:0 0 0 0 rgba(0,0,0,0)} 50%{box-shadow:0 0 0 5px rgba(0,0,0,.04)} }
+@keyframes micPulse { 0%{transform:scale(1);opacity:.5} 70%{transform:scale(1.8);opacity:0} 100%{transform:scale(1.8);opacity:0} }
+@keyframes drain { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="di"></div>
+
+  <!-- ══════════ TELA 0 — SETUP API ══════════ -->
+  <div class="screen active" id="s0">
+    <div class="logo-bar"><div class="logo">E Ɔ H O</div></div>
+    <div id="setup-box">
+      <div id="setup-title">
+        cole sua<br>anthropic api key<br>para começar
+      </div>
+      <input id="setup-input" type="password"
+        placeholder="sk-ant-api03-..." autocomplete="off"
+        onkeydown="if(event.key==='Enter') startApp()">
+      <div id="setup-err">chave inválida — tente novamente</div>
+      <button id="setup-btn" onclick="startApp()">entrar</button>
+    </div>
+  </div>
+
+  <!-- ══════════ TELA 1 ══════════ -->
+  <div class="screen" id="s1">
+    <div class="logo-bar"><div class="logo">E Ɔ H O</div></div>
+
+    <div id="vortex-wrap">
+      <canvas id="vCanvas" width="200" height="200"></canvas>
+      <svg width="180" height="180" viewBox="0 0 180 180">
+        <circle id="vRing" cx="90" cy="90" r="84"
+          fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8"/>
+      </svg>
+    </div>
+
+    <div id="mic-group">
+      <div id="mic-btn" onclick="toggleMic()">
+        <div class="mic-pulse"></div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="white"
+          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="2" width="6" height="11" rx="3"/>
+          <path d="M5 10a7 7 0 0 0 14 0"/>
+          <line x1="12" y1="19" x2="12" y2="22"/>
+          <line x1="9" y1="22" x2="15" y2="22"/>
+        </svg>
+      </div>
+      <div id="speak-lbl">Speak.<br>Or type below.</div>
+    </div>
+
+    <div id="s1-bottom">
+      <input id="s1-input" type="text" placeholder="say hello..." autocomplete="off">
+      <div id="s1-sep"></div>
+    </div>
+
+    <div id="s1-handle" onclick="goFeed()">
+      <div id="s1-handle-bar"></div>
+      <div id="feed-badge"></div>
+      <div id="s1-handle-lbl">feed</div>
+    </div>
+  </div>
+
+  <!-- ══════════ TELA 2 ══════════ -->
+  <div class="screen" id="s2">
+    <div class="logo-bar"><div class="logo">E Ɔ H O</div></div>
+
+    <div id="verdict-block">
+      <div id="verdict-loading">
+        <div id="loading-dots">
+          <div class="ldot"></div>
+          <div class="ldot"></div>
+          <div class="ldot"></div>
+        </div>
+      </div>
+      <div id="verdict-text">—</div>
+      <div id="verdict-line"></div>
+      <div id="verdict-sub">—</div>
+      <div id="verdict-tag"></div>
+    </div>
+
+    <div id="timer-wrap">
+      <div id="timer-lbl">expira em</div>
+      <div id="timer-track"><div id="timer-fill"></div></div>
+    </div>
+
+    <div id="s2-btns">
+      <div class="s2-btn discard" onclick="doDiscard()">
+        <div class="s2-ring"><span class="s2-icon">✕</span></div>
+        <span class="s2-lbl">discard</span>
+      </div>
+      <div class="s2-btn confirm" onclick="doConfirm()">
+        <div class="s2-ring"><span class="s2-icon">✓</span></div>
+        <span class="s2-lbl">echo it</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TELA 3 ══════════ -->
+  <div class="screen" id="s3">
+    <div class="logo-bar"><div class="logo">E Ɔ H O</div></div>
+    <div id="feed-handle" onclick="goOracle()">
+      <div id="feed-handle-bar"></div>
+      <div id="feed-handle-lbl">oracle</div>
+    </div>
+    <div id="feed-list"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════ */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goOracle(){ stopTimer(); show('s1'); }
+function goFeed(){
+  document.getElementById('s1-handle').classList.remove('has-echo');
+  show('s3');
+}
+
+/* ══════════════════════════════════════
+   VÓRTEX — POEIRA ORIGINAL
+══════════════════════════════════════ */
+const cv = document.getElementById('vCanvas');
+const cx = cv.getContext('2d');
+const CX=100, CY=100;
+let intensity=0, target=0, micOn=false, frame=0;
+let voiceIv=null, inputT=null;
+let suctionStrength = 0;
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * 200;
+    this.y = Math.random() * 200;
+    this.size = Math.random() * 1.0 + 0.2;
+    this.alpha = Math.random() * 0.28 + 0.07;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+  }
+  update() {
+    let dx = CX - this.x;
+    let dy = CY - this.y;
+    let dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    if (suctionStrength > 0) {
+      this.x += (dx / dist) * (suctionStrength * 0.5);
+      this.y += (dy / dist) * (suctionStrength * 0.5);
+    }
+    this.x += this.vx;
+    this.y += this.vy;
+    this.alpha -= 0.0008;
+    if (this.alpha <= 0 || dist < 5) this.reset();
+  }
+  draw() {
+    cx.fillStyle = `rgba(255, 255, 255, ${Math.max(0, this.alpha)})`;
+    cx.beginPath();
+    cx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    cx.fill();
+  }
+}
+
+const particles = [];
+for (let i = 0; i < 90; i++) particles.push(new Particle());
+
+// Acumulação no centro — junta poeira, não cria matéria
+let centerGlow = 0;
+
+(function animLoop(){
+  requestAnimationFrame(animLoop);
+  cx.clearRect(0, 0, 200, 200);
+
+  // suctionStrength desacelera gradualmente — não para de vez
+  if (suctionStrength > 0 && !micOn) {
+    suctionStrength = Math.max(0, suctionStrength - 0.018);
+  }
+
+  // Centro: acumula devagar quando há sução, dispersa devagar quando para
+  if (suctionStrength > 0.1) {
+    centerGlow = Math.min(1, centerGlow + suctionStrength * 0.008);
+  } else {
+    centerGlow = Math.max(0, centerGlow - 0.006); // dispersa lentamente
+  }
+
+  // Renderiza como névoa suave — poeira junta, não ponto de luz
+  if (centerGlow > 0.01) {
+    const r = 6 + centerGlow * 8;
+    const g = cx.createRadialGradient(CX, CY, 0, CX, CY, r);
+    g.addColorStop(0,   `rgba(255,255,255,${(centerGlow * 0.28).toFixed(2)})`);
+    g.addColorStop(0.5, `rgba(255,255,255,${(centerGlow * 0.10).toFixed(2)})`);
+    g.addColorStop(1,   'rgba(255,255,255,0)');
+    cx.fillStyle = g;
+    cx.beginPath(); cx.arc(CX, CY, r, 0, Math.PI*2); cx.fill();
+  }
+
+  particles.forEach(p => { p.update(); p.draw(); });
+})();
+
+/* Sução reage ao input e ao mic */
+function setIntensity(val){
+  suctionStrength = val;
+}
+
+/* ══════════════════════════════════════
+   TECLADO NATIVO — foca o input ao clicar no círculo/mic
+══════════════════════════════════════ */
+document.getElementById('vortex-wrap').addEventListener('click', ()=>{
+  document.getElementById('s1-input').focus();
+});
+document.getElementById('mic-group').addEventListener('click', (e)=>{
+  // Se clicou no mic-btn, toggleMic cuida. Se clicou no label, foca o input
+  if(!e.target.closest('#mic-btn')){
+    document.getElementById('s1-input').focus();
+  }
+});
+
+/* ══════════════════════════════════════
+   INPUT → VÓRTEX
+══════════════════════════════════════ */
+const inp = document.getElementById('s1-input');
+inp.addEventListener('input',()=>{
+  suctionStrength = 1.2;
+  document.getElementById('speak-lbl').classList.add('on');
+  clearTimeout(inputT);
+  // Ao parar de digitar — não zera de vez, deixa desacelerar pelo animLoop
+  inputT=setTimeout(()=>{
+    // suctionStrength vai desacelerar naturalmente pelo -0.018 por frame no animLoop
+    if(!micOn) document.getElementById('speak-lbl').classList.remove('on');
+  }, 600);
+});
+
+inp.addEventListener('keydown', e=>{
+  if(e.key==='Enter'){
+    const txt=inp.value.trim();
+    if(!txt) return;
+    showVerdict(txt);
+  }
+});
+
+/* ══════════════════════════════════════
+   MIC — Web Speech API real
+══════════════════════════════════════ */
+let recognition = null;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if(SpeechRecognition){
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'pt-BR'; // começa em português, detecta automaticamente
+
+  recognition.onstart = ()=>{
+    micOn = true;
+    document.getElementById('mic-btn').classList.add('on');
+    document.getElementById('speak-lbl').classList.add('on');
+    document.getElementById('speak-lbl').innerHTML = 'Listening...<br>&nbsp;';
+    // Vórtex reage enquanto escuta
+    voiceIv = setInterval(()=>{
+      suctionStrength = 0.6 + Math.random()*0.8;
+      setTimeout(()=>{ suctionStrength = 0.5; }, 150+Math.random()*200);
+    }, 300);
+  };
+
+  recognition.onresult = (e)=>{
+    // Mostra transcrição interim no input
+    let transcript = '';
+    for(let i = e.resultIndex; i < e.results.length; i++){
+      transcript += e.results[i][0].transcript;
+    }
+    document.getElementById('s1-input').value = transcript;
+    suctionStrength = 1.5; // pulso no vórtex ao detectar voz
+    // Intensifica vórtex conforme fala
+    document.getElementById('speak-lbl').classList.add('on');
+  };
+
+  recognition.onend = ()=>{
+    micOn = false;
+    clearInterval(voiceIv);
+    suctionStrength = 0;
+    document.getElementById('mic-btn').classList.remove('on');
+    document.getElementById('speak-lbl').classList.remove('on');
+    document.getElementById('speak-lbl').innerHTML = 'Speak.<br>Or type below.';
+    // Se capturou texto — envia automaticamente
+    const txt = document.getElementById('s1-input').value.trim();
+    if(txt) showVerdict(txt);
+  };
+
+  recognition.onerror = (e)=>{
+    micOn = false;
+    clearInterval(voiceIv);
+    suctionStrength = 0;
+    document.getElementById('mic-btn').classList.remove('on');
+    document.getElementById('speak-lbl').innerHTML = 'Speak.<br>Or type below.';
+    document.getElementById('speak-lbl').classList.remove('on');
+  };
+}
+
+function toggleMic(){
+  if(!SpeechRecognition){
+    // Fallback se browser não suporta
+    document.getElementById('speak-lbl').innerHTML = 'Use o campo<br>de texto';
+    setTimeout(()=>{ document.getElementById('speak-lbl').innerHTML = 'Speak.<br>Or type below.'; }, 2000);
+    return;
+  }
+  if(micOn){
+    recognition.stop();
+  } else {
+    document.getElementById('s1-input').value = '';
+    recognition.start();
+  }
+}
+
+/* ══════════════════════════════════════
+   API KEY — setup
+══════════════════════════════════════ */
+let ANTHROPIC_KEY = '';
+
+function startApp(){
+  const k = document.getElementById('setup-input').value.trim();
+  if(!k.startsWith('sk-ant-')){
+    document.getElementById('setup-err').style.display='block';
+    return;
+  }
+  ANTHROPIC_KEY = k;
+  document.getElementById('setup-err').style.display='none';
+  show('s1');
+}
+
+/* ══════════════════════════════════════
+   SYSTEM PROMPT — ECHO
+══════════════════════════════════════ */
+const ECHO_PROMPT = `Você é o ECHO — o amigo honesto que todo mundo precisa mas poucos têm. Direto, equilibrado, sem enrolação.
+
+FORMATO OBRIGATÓRIO:
+Responda SEMPRE em JSON com exatamente três campos:
+- "verdict": máximo 4 palavras em CAIXA ALTA. O veredito, a resposta, o fato.
+- "sub": máximo 12 palavras em minúsculo. O complemento — pode ter personalidade, mas só quando fizer sentido.
+- "tag": UMA palavra em minúsculo que classifica a linha de raciocínio da pergunta. Seja genérico o suficiente para não entregar a pergunta original. Use apenas: carreira, relacionamento, decisão, dinheiro, lifestyle, família, saúde, criatividade, propósito, trivial, autoconhecimento, social, tempo, risco.
+
+LEIA O TIPO DE PERGUNTA E AJUSTE O TOM:
+
+1. PERGUNTA LÓGICA OU FACTUAL (como funciona X, qual é Y, me explica Z):
+Responda com clareza e precisão. Sem sarcasmo, sem patada. O verdict é a resposta direta. O sub é o detalhe mais útil.
+Exemplo: {"verdict":"LUZ VIRA ENERGIA","sub":"a planta converte luz solar em glicose via clorofila.","tag":"criatividade"}
+
+2. DILEMA OU DECISÃO EMOCIONAL (devo largar o emprego, termino ou não, vale a pena):
+Decida sem hesitar. Use personalidade, verdade crua, leve sarcasmo se a situação pedir. Nunca fique em cima do muro.
+Exemplo: {"verdict":"VAI EMBORA","sub":"três anos esperando mudança que nunca veio é resposta suficiente.","tag":"carreira"}
+
+3. PERGUNTA TRIVIAL OU BOBA (pizza ou hambúrguer, filme pra ver, cor da roupa):
+Pode ser mais leve e bem-humorado. Decide com convicção mesmo assim.
+Exemplo: {"verdict":"PIZZA SEMPRE","sub":"hambúrguer é bom, mas pizza é religião.","tag":"trivial"}
+
+4. CONTEXTO INSUFICIENTE:
+Decida assim mesmo com o que tem. Jogue a responsabilidade de volta com leveza.
+Exemplo: {"verdict":"VAI NO INSTINTO","sub":"com essa informação toda que me deu, confie no que já sabe.","tag":"decisão"}
+
+5. ASSUNTO PESADO (crise, autolesão, depressão):
+{"verdict":"BUSQUE APOIO HUMANO","sub":"isso é maior do que eu consigo ajudar — fale com alguém de confiança.","tag":"saúde"}
+
+REGRAS FIXAS:
+- Nunca use bullet points, nunca faça perguntas, nunca peça mais informação
+- Responda no idioma do usuário
+- Nunca use aspas dentro dos valores JSON
+- Retorne APENAS o JSON, sem nenhum texto antes ou depois
+
+Exemplo de JSON válido:
+{"verdict":"DÊ O SALTO","sub":"o chão só aparece para quem tem coragem de pular.","tag":"decisão"}`;
+
+/* ══════════════════════════════════════
+   TELA 2 — VEREDITO COM API REAL
+══════════════════════════════════════ */
+let currentVerdict=null, timerTO=null;
+
+async function showVerdict(input){
+  // Mostra tela 2 imediatamente com loading
+  show('s2');
+  setLoading(true);
+
+  // Para o mic e limpa input
+  micOn=false; suctionStrength=0; clearInterval(voiceIv);
+  document.getElementById('mic-btn').classList.remove('on');
+  document.getElementById('speak-lbl').classList.remove('on');
+  document.getElementById('speak-lbl').innerHTML='Speak.<br>Or type below.';
+  inp.value='';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 120,
+        system: ECHO_PROMPT,
+        messages: [{ role: 'user', content: input }]
+      })
+    });
+
+    const data = await res.json();
+
+    if(!res.ok){
+      // Mostra erro real na tela de loading para debug
+      const errMsg = data.error?.message || JSON.stringify(data);
+      renderVerdict('ERRO API', errMsg.slice(0,60));
+      return;
+    }
+
+    const raw = data.content[0].text.trim();
+
+    // Extração robusta — pega o JSON mesmo se vier com texto ao redor
+    const match = raw.match(/\{[\s\S]*\}/);
+    if(!match) throw new Error('JSON não encontrado: ' + raw);
+    const parsed = JSON.parse(match[0]);
+
+    if(!parsed.verdict || !parsed.sub) throw new Error('Campos ausentes');
+    renderVerdict(parsed.verdict, parsed.sub, parsed.tag || 'echo', input);
+
+  } catch(err) {
+    // Mostra erro real para facilitar debug
+    renderVerdict('ERRO', err.message.slice(0,80), 'echo', input);
+  }
+}
+
+function setLoading(on){
+  const loading = document.getElementById('verdict-loading');
+  const vt = document.getElementById('verdict-text');
+  const vl = document.getElementById('verdict-line');
+  const vs = document.getElementById('verdict-sub');
+  const vg = document.getElementById('verdict-tag');
+  if(on){
+    vt.innerHTML = ''; vs.textContent = ''; if(vg) vg.textContent = '';
+    vt.style.opacity='0'; vl.style.opacity='0'; vs.style.opacity='0';
+    loading.style.display='flex';
+    document.getElementById('timer-fill').style.animation='none';
+  } else {
+    loading.style.display='none';
+  }
+}
+
+function renderVerdict(verdict, sub, tag, input){
+  setLoading(false);
+  currentVerdict = { verdict, sub, tag: tag||'echo', input };
+
+  const vt=document.getElementById('verdict-text');
+  const vl=document.getElementById('verdict-line');
+  const vs=document.getElementById('verdict-sub');
+  const vg=document.getElementById('verdict-tag');
+
+  // Reset animações
+  vt.style.animation='none'; vl.style.animation='none';
+  vs.style.animation='none'; if(vg) vg.style.animation='none';
+  vt.offsetHeight;
+  vt.style.animation=''; vl.style.animation='';
+  vs.style.animation=''; if(vg) vg.style.animation='';
+
+  const words = verdict.split(' ');
+  vt.innerHTML = words.length > 1
+    ? words.slice(0,-1).join(' ')+'<br>'+words[words.length-1]
+    : verdict;
+  vs.textContent = '"'+sub+'"';
+  if(vg) vg.textContent = '#'+(tag||'echo');
+
+  // Inicia timer
+  const fill=document.getElementById('timer-fill');
+  fill.style.animation='none'; fill.offsetHeight;
+  fill.style.animation='drain 10s linear forwards 0.3s';
+
+  // Reset botões
+  document.querySelectorAll('.s2-btn').forEach(b=>{
+    b.style.animation='none'; b.offsetHeight; b.style.animation='';
+  });
+
+  // Auto-discard 10s
+  clearTimeout(timerTO);
+  timerTO=setTimeout(()=>doDiscard(), 10500);
+}
+
+function doDiscard(){
+  clearTimeout(timerTO);
+  currentVerdict=null;
+  goOracle();
+}
+
+function doConfirm(){
+  clearTimeout(timerTO);
+  if(!currentVerdict) return;
+  addCard(currentVerdict.verdict, currentVerdict.sub, currentVerdict.tag);
+  currentVerdict=null;
+  echoSentFeedback();
+}
+
+function echoSentFeedback(){
+  const confirmBtn = document.querySelector('.s2-btn.confirm .s2-ring');
+  if(confirmBtn){
+    confirmBtn.style.transition = 'all 0.2s ease';
+    confirmBtn.style.background = '#111';
+    confirmBtn.style.borderColor = '#111';
+  }
+  setTimeout(()=>{
+    if(confirmBtn){
+      confirmBtn.style.background = '';
+      confirmBtn.style.borderColor = '';
+    }
+    // Acende barra + label pulsando
+    document.getElementById('s1-handle').classList.add('has-echo');
+    goOracle();
+  }, 400);
+}
+
+function stopTimer(){ clearTimeout(timerTO); }
+
+/* ══════════════════════════════════════
+   TELA 3 — FEED
+══════════════════════════════════════ */
+const usernames=[
+  "@richard.k","@thay.rs","@brunoms","@carol.tf","@mateus_al",
+  "@ju.paiva","@rafa.nc","@leo.pv","@bia.eo","@pedro.ws",
+  "@ana.lima","@lucas.ig","@mari.so","@gui.rj","@duda.sp"
+];
+const voted={};
+
+function addCard(verdict, sub, tag, prepend=true){
+  const fl=document.getElementById('feed-list');
+  const id='c'+Date.now();
+  const u=usernames[Math.floor(Math.random()*usernames.length)];
+  const tagStr = tag ? '#'+tag : '';
+
+  const card=document.createElement('div');
+  card.className='fcard';
+  card.setAttribute('data-id', id);
+  card.innerHTML=`
+    <div class="swipe-overlay like"  id="sol-${id}">✓</div>
+    <div class="swipe-overlay dislike" id="sod-${id}">✕</div>
+    <div class="fcard-top">
+      <div class="fcard-user">${u}</div>
+      <div class="fcard-metrics">
+        <div class="fm">
+          <span class="fm-icon" id="di-${id}">✕</span>
+          <span class="fm-val" id="dv-${id}">0</span>
+        </div>
+        <div class="fm">
+          <span class="fm-icon" id="li-${id}">✓</span>
+          <span class="fm-val" id="lv-${id}">0</span>
+        </div>
+        <div class="fm" onclick="toggleC('${id}')">
+          <span class="fm-icon locked" id="ci-icon-${id}">💬</span>
+          <span class="fm-val" id="cc-${id}">0</span>
+        </div>
+        <div class="fm">
+          <span class="fm-icon" style="font-size:13px;opacity:0.18">↗</span>
+          <span class="fm-val"></span>
+        </div>
+      </div>
+    </div>
+    <div class="fcard-verdict">${verdict}</div>
+    <div class="fcard-sub">"${sub}"</div>
+    ${tagStr ? `
+    <div class="fcard-bottom">
+      <div class="fcard-bottom-left"></div>
+      <div class="fcard-tag">${tagStr}</div>
+    </div>` : ''}
+    <div class="comments-box" id="cb-${id}">
+      <div class="c-need-vote" id="nv-${id}">arraste para votar antes de comentar</div>
+      <div class="c-input-row" id="cr-${id}">
+        <input class="c-inp" id="cinp-${id}" placeholder="seu comentário..." maxlength="120">
+        <button class="c-send" onclick="postC('${id}')">enviar</button>
+      </div>
+      <div id="cl-${id}"></div>
+    </div>`;
+
+  if(prepend && fl.firstChild) fl.insertBefore(card, fl.firstChild);
+  else fl.appendChild(card);
+
+  card.querySelector('.c-inp, #cinp-'+id) && card.querySelector(`#cinp-${id}`).addEventListener('keydown', e=>{
+    if(e.key==='Enter') postC(id);
+  });
+
+  // Attach swipe gesture
+  attachSwipe(card, id);
+}
+
+/* ══════════════════════════════════════
+   SWIPE GESTURE
+══════════════════════════════════════ */
+function attachSwipe(card, id){
+  let startX=0, startY=0, dx=0, dragging=false;
+  const THRESHOLD = 60; // px para confirmar voto
+
+  function onStart(x, y){
+    if(voted[id]) return;
+    startX=x; startY=y; dx=0; dragging=true;
+    card.classList.add('swiping');
+  }
+  function onMove(x, y){
+    if(!dragging) return;
+    dx = x - startX;
+    const dy = Math.abs(y - startY);
+    // Se movimento é mais vertical — ignora (está scrollando o feed)
+    if(dy > Math.abs(dx) && Math.abs(dx) < 15) return;
+    card.style.transform = `translateX(${dx}px)`;
+    // Overlay
+    const solEl = document.getElementById('sol-'+id);
+    const sodEl = document.getElementById('sod-'+id);
+    const ratio = Math.min(Math.abs(dx) / THRESHOLD, 1);
+    if(dx > 0){ solEl.style.opacity=ratio*0.9; sodEl.style.opacity=0; }
+    else if(dx < 0){ sodEl.style.opacity=ratio*0.9; solEl.style.opacity=0; }
+    else { solEl.style.opacity=0; sodEl.style.opacity=0; }
+  }
+  function onEnd(){
+    if(!dragging) return;
+    dragging=false;
+    card.classList.remove('swiping');
+    document.getElementById('sol-'+id).style.opacity=0;
+    document.getElementById('sod-'+id).style.opacity=0;
+
+    if(Math.abs(dx) >= THRESHOLD && !voted[id]){
+      const type = dx > 0 ? 'l' : 'd';
+      // Bounce — vai até o limite e volta
+      const bounceX = dx > 0 ? 90 : -90;
+      card.style.transition = 'transform 0.18s ease';
+      card.style.transform = `translateX(${bounceX}px)`;
+      setTimeout(()=>{
+        card.style.transition = 'transform 0.3s cubic-bezier(.18,.89,.32,1.28)';
+        card.style.transform = 'translateX(0)';
+        registerVote(id, type);
+      }, 180);
+    } else {
+      card.style.transition = 'transform 0.25s ease';
+      card.style.transform = 'translateX(0)';
+    }
+  }
+
+  // Touch
+  card.addEventListener('touchstart', e=>{ onStart(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+  card.addEventListener('touchmove',  e=>{ onMove(e.touches[0].clientX, e.touches[0].clientY); }, {passive:true});
+  card.addEventListener('touchend',   ()=> onEnd());
+  // Mouse (desktop)
+  card.addEventListener('mousedown',  e=>{ onStart(e.clientX, e.clientY); });
+  document.addEventListener('mousemove', e=>{ if(dragging) onMove(e.clientX, e.clientY); });
+  document.addEventListener('mouseup',   ()=>{ if(dragging) onEnd(); });
+}
+
+function registerVote(id, type){
+  if(voted[id]) return;
+  voted[id] = type;
+  // Atualiza ícones métricas
+  if(type==='l'){
+    document.getElementById('li-'+id).classList.add('voted');
+    const el=document.getElementById('lv-'+id);
+    el.textContent=parseInt(el.textContent)+1;
+  } else {
+    document.getElementById('di-'+id).classList.add('voted');
+    const el=document.getElementById('dv-'+id);
+    el.textContent=parseInt(el.textContent)+1;
+  }
+  // Desbloqueia comentário
+  const icon=document.getElementById('ci-icon-'+id);
+  if(icon){ icon.classList.remove('locked'); icon.classList.add('unlocked'); }
+  const nv=document.getElementById('nv-'+id);
+  if(nv) nv.style.display='none';
+  const row=document.getElementById('cr-'+id);
+  if(row) row.classList.add('show');
+}
+
+let openCommentId = null;
+
+function closeOpenComment(){
+  if(openCommentId){
+    const prev=document.getElementById('cb-'+openCommentId);
+    if(prev) prev.classList.remove('open');
+    openCommentId = null;
+  }
+}
+
+function toggleC(id){
+  const box=document.getElementById('cb-'+id);
+  const isOpen = box.classList.contains('open');
+  closeOpenComment();
+  if(!isOpen){
+    box.classList.add('open');
+    openCommentId = id;
+    if(voted[id]){
+      setTimeout(()=>{
+        const inp=document.getElementById('cinp-'+id);
+        if(inp) inp.focus();
+      }, 360);
+    }
+  }
+}
+
+// Fechar comentário ao tocar em qualquer card diferente
+document.getElementById('feed-list').addEventListener('click', e=>{
+  const card = e.target.closest('.fcard');
+  if(!card) return;
+  const id = card.getAttribute('data-id');
+  // Se o clique não foi dentro do comentário aberto — fecha
+  if(openCommentId && openCommentId !== id){
+    closeOpenComment();
+  }
+});
+
+function postC(id){
+  const inp=document.getElementById('cinp-'+id);
+  if(!inp) return;
+  const txt=inp.value.trim(); if(!txt) return;
+  const list=document.getElementById('cl-'+id);
+  const d=document.createElement('div'); d.className='c-item';
+  d.innerHTML=`<div class="c-who">você</div><div class="c-txt">${txt}</div>`;
+  list.prepend(d); inp.value='';
+  const cc=document.getElementById('cc-'+id);
+  if(cc) cc.textContent=parseInt(cc.textContent)+1;
+}
+
+// Feed inicia vazio — apenas ecos reais do usuário aparecem aqui
+
+</script>
+</body>
+</html>
