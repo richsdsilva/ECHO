@@ -51,9 +51,8 @@ body {
   padding-bottom: 10px; z-index: 100; pointer-events: none;
 }
 .logo {
-  font-weight: 300; letter-spacing: 8px; font-size: 14px;
-  text-transform: uppercase; text-decoration: underline;
-  text-underline-offset: 4px;
+  font-weight: 400; letter-spacing: 10px; font-size: 15px;
+  text-transform: uppercase;
 }
 
 /* ── SCREENS ── */
@@ -77,7 +76,11 @@ body {
   top: 0; left: 0; right: 0;
   display: flex; flex-direction: column; align-items: center;
   pointer-events: none;
-  z-index: 5;
+  z-index: 2;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+#s1.active #s1-fixed { opacity: 1; }
+#s1.active #s1-fixed > * { pointer-events: all; }
 }
 #s1-fixed > * { pointer-events: all; }
 
@@ -344,7 +347,7 @@ body {
 .c-txt { font-size: 10px; color: #666; line-height: 1.5; }
 
 /* ── SETUP SCREEN ── */
-#s0 { background: #000; justify-content: center; }
+#s0 { background: #000; justify-content: center; z-index: 100; }
 #s0 .logo { color: #fff; opacity: 0.6; }
 #setup-box {
   width: 260px; display: flex; flex-direction: column;
