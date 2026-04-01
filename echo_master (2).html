@@ -13,12 +13,12 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  background: #000; width: 100vw; height: 100vh;
+  background: #000;
+  width: 100vw;
+  height: 100dvh;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   -webkit-font-smoothing: antialiased;
-  /* Safe area para notch e home indicator */
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 
 /* ── PHONE SHELL — só no desktop ── */
@@ -32,7 +32,7 @@ body {
   .di { display: block !important; }
 }
 @media (max-width: 499px) {
-  .phone { width: 100vw; height: 100vh; border-radius: 0; border: none; box-shadow: none; }
+  .phone { width: 100vw; height: 100dvh; border-radius: 0; border: none; box-shadow: none; }
   .di { display: none; }
 }
 
@@ -51,8 +51,9 @@ body {
   padding-bottom: 10px; z-index: 100; pointer-events: none;
 }
 .logo {
-  font-weight: 300; letter-spacing: 6px; font-size: 11px;
-  text-transform: uppercase;
+  font-weight: 300; letter-spacing: 8px; font-size: 14px;
+  text-transform: uppercase; text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* ── SCREENS ── */
@@ -70,9 +71,19 @@ body {
 #s1 { background: #000; justify-content: flex-start; }
 #s1 .logo { color: #fff; opacity: 0.65; }
 
+/* Conteúdo superior fixo — não sobe com o teclado */
+#s1-fixed {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex; flex-direction: column; align-items: center;
+  pointer-events: none;
+  z-index: 5;
+}
+#s1-fixed > * { pointer-events: all; }
+
 #vortex-wrap {
   margin-top: 90px;
-  width: 200px; height: 200px;
+  width: 260px; height: 260px;
   position: relative; display: flex;
   align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -111,8 +122,10 @@ body {
 
 /* Teclado fixo suspenso */
 #s1-bottom {
+  position: absolute;
+  bottom: 70px;
+  width: 100%;
   display: flex; flex-direction: column; align-items: center;
-  margin-top: 14px; width: 100%; flex-shrink: 0;
 }
 #s1-input {
   width: 240px; background: transparent; border: none;
@@ -127,17 +140,17 @@ body {
 
 #s1-handle {
   position: absolute; bottom: 14px;
-  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
   cursor: pointer; z-index: 10;
-  width: 60px; /* largura fixa para centralizar bar e label juntos */
+  width: 80px;
 }
 #s1-handle-bar {
-  width: 34px; height: 2.5px;
+  width: 44px; height: 3px;
   background: rgba(255,255,255,0.1); border-radius: 2px; transition: 0.4s;
 }
 #s1-handle:hover #s1-handle-bar { background: rgba(255,255,255,0.4); }
 #s1-handle-lbl {
-  font-size: 9px; letter-spacing: 3px;
+  font-size: 12px; letter-spacing: 3px;
   color: rgba(255,255,255,0.18); text-transform: uppercase; transition: 0.4s;
   text-align: center; width: 100%;
 }
@@ -228,19 +241,18 @@ body {
 #feed-handle {
   position: absolute; bottom: 14px; width: 100%;
   display: flex; flex-direction: column; align-items: center;
-  gap: 5px; z-index: 10; cursor: pointer;
-  /* Área de proteção — impede que o feed invada */
+  gap: 6px; z-index: 10; cursor: pointer;
   background: linear-gradient(to top, #fff 60%, transparent);
   padding-top: 20px;
 }
 #feed-handle-bar {
-  width: 34px; height: 2.5px;
+  width: 44px; height: 3px;
   background: rgba(0,0,0,0.12); border-radius: 2px;
   transition: 0.3s;
 }
 #feed-handle:hover #feed-handle-bar { background: rgba(0,0,0,0.35); }
 #feed-handle-lbl {
-  font-size: 7px; letter-spacing: 3px;
+  font-size: 12px; letter-spacing: 3px;
   color: rgba(0,0,0,0.25); text-transform: uppercase;
 }
 
@@ -429,26 +441,28 @@ body {
   <div class="screen" id="s1">
     <div class="logo-bar"><div class="logo">E Ɔ H O</div></div>
 
-    <div id="vortex-wrap">
-      <canvas id="vCanvas" width="200" height="200"></canvas>
-      <svg width="180" height="180" viewBox="0 0 180 180">
-        <circle id="vRing" cx="90" cy="90" r="84"
-          fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8"/>
-      </svg>
-    </div>
-
-    <div id="mic-group">
-      <div id="mic-btn" onclick="toggleMic()">
-        <div class="mic-pulse"></div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="white"
-          stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="9" y="2" width="6" height="11" rx="3"/>
-          <path d="M5 10a7 7 0 0 0 14 0"/>
-          <line x1="12" y1="19" x2="12" y2="22"/>
-          <line x1="9" y1="22" x2="15" y2="22"/>
+    <div id="s1-fixed">
+      <div style="height:84px"></div>
+      <div id="vortex-wrap">
+        <canvas id="vCanvas" width="260" height="260"></canvas>
+        <svg width="234" height="234" viewBox="0 0 234 234">
+          <circle id="vRing" cx="117" cy="117" r="110"
+            fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8"/>
         </svg>
       </div>
-      <div id="speak-lbl">Speak.<br>Or type below.</div>
+      <div id="mic-group">
+        <div id="mic-btn" onclick="toggleMic()">
+          <div class="mic-pulse"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="white"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="11" rx="3"/>
+            <path d="M5 10a7 7 0 0 0 14 0"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+            <line x1="9" y1="22" x2="15" y2="22"/>
+          </svg>
+        </div>
+        <div id="speak-lbl">Speak.<br>Or type below.</div>
+      </div>
     </div>
 
     <div id="s1-bottom">
@@ -528,7 +542,7 @@ function goFeed(){
 ══════════════════════════════════════ */
 const cv = document.getElementById('vCanvas');
 const cx = cv.getContext('2d');
-const CX=100, CY=100;
+const CX=130, CY=130;
 let intensity=0, target=0, micOn=false, frame=0;
 let voiceIv=null, inputT=null;
 let suctionStrength = 0;
@@ -536,8 +550,8 @@ let suctionStrength = 0;
 class Particle {
   constructor() { this.reset(); }
   reset() {
-    this.x = Math.random() * 200;
-    this.y = Math.random() * 200;
+    this.x = Math.random() * 260;
+    this.y = Math.random() * 260;
     this.size = Math.random() * 1.0 + 0.2;
     this.alpha = Math.random() * 0.28 + 0.07;
     this.vx = (Math.random() - 0.5) * 0.3;
@@ -572,7 +586,7 @@ let centerGlow = 0;
 
 (function animLoop(){
   requestAnimationFrame(animLoop);
-  cx.clearRect(0, 0, 200, 200);
+  cx.clearRect(0, 0, 260, 260);
 
   // suctionStrength desacelera gradualmente — não para de vez
   if (suctionStrength > 0 && !micOn) {
